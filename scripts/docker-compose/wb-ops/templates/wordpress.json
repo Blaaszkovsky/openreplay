@@ -1,0 +1,85 @@
+{
+  "name": "WordPress (wb_wpopenreplay)",
+  "description": "Metadata keys and the Conversion path dashboard for websites running the wb_wpopenreplay plugin: forms, conversion clicks, search, scroll, JS errors.",
+  "metadata": ["user_type", "user_role", "cart_id", "order_id", "utm_source", "utm_medium", "utm_campaign", "landing_page", "lang"],
+  "dashboard": {
+    "name": "Conversion path",
+    "description": "Sciezka konwersji WordPress: formularze, kliknięcia konwersji zewnętrznej, wyszukiwarka, przewijanie, błędy JS. Wygenerowane z szablonu wb-ops."
+  },
+  "cards": [
+    {
+      "name": "Lejek formularzy: start → wysłanie → sukces",
+      "metricType": "funnel",
+      "viewType": "chart",
+      "metricOf": "sessionCount",
+      "metricFormat": "sessionCount",
+      "series": [{ "name": "Sesje", "events": ["form_start", "form_submit", "form_success"] }]
+    },
+    {
+      "name": "Formularze (sesje / dzień)",
+      "metricType": "timeseries",
+      "viewType": "lineChart",
+      "metricOf": "sessionCount",
+      "metricFormat": "sessionCount",
+      "series": [
+        { "name": "form_start", "events": ["form_start"] },
+        { "name": "form_submit", "events": ["form_submit"] },
+        { "name": "form_success", "events": ["form_success"] },
+        { "name": "form_error", "events": ["form_error"] }
+      ]
+    },
+    {
+      "name": "Konwersje zewnętrzne i CTA",
+      "metricType": "timeseries",
+      "viewType": "barChart",
+      "metricOf": "sessionCount",
+      "metricFormat": "sessionCount",
+      "series": [
+        { "name": "conversion_click", "events": ["conversion_click"] },
+        { "name": "cta_click", "events": ["cta_click"] },
+        { "name": "phone_click", "events": ["phone_click"] },
+        { "name": "email_click", "events": ["email_click"] }
+      ]
+    },
+    {
+      "name": "Wyszukiwarka",
+      "metricType": "timeseries",
+      "viewType": "lineChart",
+      "metricOf": "sessionCount",
+      "metricFormat": "sessionCount",
+      "series": [
+        { "name": "search_open", "events": ["search_open"] },
+        { "name": "search_submit", "events": ["search_submit"] }
+      ]
+    },
+    {
+      "name": "Głębokość przewijania (sesje)",
+      "metricType": "timeseries",
+      "viewType": "barChart",
+      "metricOf": "sessionCount",
+      "metricFormat": "sessionCount",
+      "series": [
+        { "name": "25%", "events": [{ "name": "scroll_depth", "props": { "depth": 25 } }] },
+        { "name": "50%", "events": [{ "name": "scroll_depth", "props": { "depth": 50 } }] },
+        { "name": "75%", "events": [{ "name": "scroll_depth", "props": { "depth": 75 } }] },
+        { "name": "100%", "events": [{ "name": "scroll_depth", "props": { "depth": 100 } }] }
+      ]
+    },
+    {
+      "name": "Użytkownicy z błędem formularza",
+      "metricType": "table",
+      "viewType": "table",
+      "metricOf": "userId",
+      "metricFormat": "sessionCount",
+      "series": [{ "name": "Sesje", "events": ["form_error"] }]
+    },
+    {
+      "name": "Błędy JS w sesjach z formularzem",
+      "metricType": "table",
+      "viewType": "table",
+      "metricOf": "jsException",
+      "metricFormat": "sessionCount",
+      "series": [{ "name": "Sesje", "events": ["form_start"] }]
+    }
+  ]
+}

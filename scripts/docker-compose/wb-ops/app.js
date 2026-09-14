@@ -48,7 +48,12 @@
   /* ---------------- helpers ---------------- */
   function log(el, msg, cls) { const line = document.createElement('div'); line.textContent = msg; if (cls) line.style.color = cls === 'err' ? '#fca5a5' : cls === 'ok' ? '#86efac' : ''; el.appendChild(line); el.scrollTop = el.scrollHeight; }
   const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
-  const eventFilter = (name) => ({ name, isEvent: true, operator: 'is', value: [], propertyOrder: 'and', filters: [], autoCaptured: false, dataType: 'string' });
+  // an event step is a name or { name, props: { key: value } } (property filter on the event)
+  const eventFilter = (ev) => {
+    const def = typeof ev === 'string' ? { name: ev } : ev;
+    const props = Object.keys(def.props || {}).map((k) => ({ name: k, isEvent: false, operator: 'is', value: [String(def.props[k])], propertyOrder: 'and', filters: [], autoCaptured: false, dataType: 'string' }));
+    return { name: def.name, isEvent: true, operator: 'is', value: [], propertyOrder: 'and', filters: props, autoCaptured: false, dataType: 'string' };
+  };
   const dayMs = 864e5;
   const fmtDate = (ts) => new Date(ts).toISOString().slice(0, 10);
 
@@ -108,12 +113,28 @@
   }
 
   /* ---------------- template: plan + apply ---------------- */
+  // templates can `extends` another one: metadata is unioned, cards are appended (by name), dashboard is the child's
   async function loadTemplates() {
-    const names = ['prestashop'];
-    const sel = $('template');
+    const names = ['prestashop', 'wordpress', 'woocommerce'];
+    const raw = {};
     for (const n of names) {
       const r = await fetch('templates/' + n + '.json?v=' + Date.now());
-      state.templates[n] = await r.json();
+      raw[n] = await r.json();
+    }
+    const resolve = (n, seen = []) => {
+      const t = raw[n];
+      if (!t) throw new Error('unknown template ' + n);
+      if (!t.extends || seen.includes(n)) return t;
+      const base = resolve(t.extends, seen.concat(n));
+      const names = new Set(base.cards.map((c) => c.name));
+      return Object.assign({}, base, t, {
+        metadata: Array.from(new Set((base.metadata || []).concat(t.metadata || []))),
+        cards: base.cards.concat((t.cards || []).filter((c) => !names.has(c.name))),
+      });
+    };
+    const sel = $('template');
+    for (const n of names) {
+      state.templates[n] = resolve(n);
       const o = document.createElement('option'); o.value = n; o.textContent = state.templates[n].name; sel.appendChild(o);
     }
   }

@@ -1,0 +1,67 @@
+{
+  "name": "WordPress + WooCommerce (wb_wpopenreplay)",
+  "extends": "wordpress",
+  "description": "Everything from the WordPress template plus the WooCommerce purchase path.",
+  "dashboard": {
+    "name": "Conversion path",
+    "description": "Sciezka konwersji WordPress + WooCommerce: formularze, konwersje zewnętrzne, lejek sklepu, blokady checkoutu. Wygenerowane z szablonu wb-ops."
+  },
+  "cards": [
+    {
+      "name": "Lejek sklepu: produkt → koszyk → checkout → zamówienie",
+      "metricType": "funnel",
+      "viewType": "chart",
+      "metricOf": "sessionCount",
+      "metricFormat": "sessionCount",
+      "series": [{ "name": "Sesje", "events": ["product_view", "cart_add", "checkout_view", "checkout_submit", "order_complete"] }]
+    },
+    {
+      "name": "Wolumen kroków lejka sklepu (sesje / dzień)",
+      "metricType": "timeseries",
+      "viewType": "lineChart",
+      "metricOf": "sessionCount",
+      "metricFormat": "sessionCount",
+      "series": [
+        { "name": "product_view", "events": ["product_view"] },
+        { "name": "cart_add", "events": ["cart_add"] },
+        { "name": "checkout_view", "events": ["checkout_view"] },
+        { "name": "checkout_submit", "events": ["checkout_submit"] },
+        { "name": "order_complete", "events": ["order_complete"] }
+      ]
+    },
+    {
+      "name": "Blokady checkoutu (sklep)",
+      "metricType": "timeseries",
+      "viewType": "barChart",
+      "metricOf": "sessionCount",
+      "metricFormat": "sessionCount",
+      "series": [
+        { "name": "checkout_submit_blocked", "events": ["checkout_submit_blocked"] },
+        { "name": "checkout_form_error", "events": ["checkout_form_error"] },
+        { "name": "payment_error", "events": ["payment_error"] },
+        { "name": "voucher_error", "events": ["voucher_error"] },
+        { "name": "payment_redirect", "events": ["payment_redirect"] }
+      ]
+    },
+    {
+      "name": "Wybór dostawy i płatności (sklep)",
+      "metricType": "timeseries",
+      "viewType": "lineChart",
+      "metricOf": "sessionCount",
+      "metricFormat": "sessionCount",
+      "series": [
+        { "name": "checkout_carrier_select", "events": ["checkout_carrier_select"] },
+        { "name": "checkout_payment_select", "events": ["checkout_payment_select"] },
+        { "name": "voucher_add", "events": ["voucher_add"] }
+      ]
+    },
+    {
+      "name": "Użytkownicy z zablokowanym checkoutem (sklep)",
+      "metricType": "table",
+      "viewType": "table",
+      "metricOf": "userId",
+      "metricFormat": "sessionCount",
+      "series": [{ "name": "Sesje", "events": ["checkout_submit_blocked"] }]
+    }
+  ]
+}
