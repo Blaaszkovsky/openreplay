@@ -1,0 +1,102 @@
+{
+  "name": "PrestaShop (wb_openreplay)",
+  "description": "Metadata keys and the Conversion path dashboard for shops running the wb_openreplay module. Event names come from the module's docs/EVENTS.md.",
+  "metadata": ["user_type", "customer_group", "cart_id", "order_id", "utm_source", "utm_medium", "utm_campaign", "landing_page", "lang"],
+  "dashboard": {
+    "name": "Conversion path",
+    "description": "Sciezka zakupowa PrestaShop: lejek, blokady checkoutu, koszyk, kody rabatowe, wyszukiwarka. Wygenerowane z szablonu wb-ops."
+  },
+  "cards": [
+    {
+      "name": "Lejek: produkt → koszyk → checkout → zamówienie",
+      "metricType": "funnel",
+      "viewType": "chart",
+      "metricOf": "sessionCount",
+      "metricFormat": "sessionCount",
+      "series": [{ "name": "Sesje", "events": ["product_view", "cart_add", "checkout_view", "checkout_submit", "order_complete"] }]
+    },
+    {
+      "name": "Wolumen kroków lejka (sesje / dzień)",
+      "metricType": "timeseries",
+      "viewType": "lineChart",
+      "metricOf": "sessionCount",
+      "metricFormat": "sessionCount",
+      "series": [
+        { "name": "product_view", "events": ["product_view"] },
+        { "name": "cart_add", "events": ["cart_add"] },
+        { "name": "checkout_view", "events": ["checkout_view"] },
+        { "name": "checkout_submit", "events": ["checkout_submit"] },
+        { "name": "order_complete", "events": ["order_complete"] }
+      ]
+    },
+    {
+      "name": "Blokady checkoutu",
+      "metricType": "timeseries",
+      "viewType": "barChart",
+      "metricOf": "sessionCount",
+      "metricFormat": "sessionCount",
+      "series": [
+        { "name": "checkout_submit_blocked", "events": ["checkout_submit_blocked"] },
+        { "name": "checkout_form_error", "events": ["checkout_form_error"] },
+        { "name": "payment_error", "events": ["payment_error"] },
+        { "name": "carrier_unavailable", "events": ["carrier_unavailable"] },
+        { "name": "payment_redirect", "events": ["payment_redirect"] }
+      ]
+    },
+    {
+      "name": "Problemy z koszykiem i kodami",
+      "metricType": "timeseries",
+      "viewType": "barChart",
+      "metricOf": "sessionCount",
+      "metricFormat": "sessionCount",
+      "series": [
+        { "name": "cart_add_failed", "events": ["cart_add_failed"] },
+        { "name": "cart_update_failed", "events": ["cart_update_failed"] },
+        { "name": "voucher_error", "events": ["voucher_error"] },
+        { "name": "voucher_add", "events": ["voucher_add"] },
+        { "name": "voucher_remove", "events": ["voucher_remove"] }
+      ]
+    },
+    {
+      "name": "Wybór przewoźnika i płatności",
+      "metricType": "timeseries",
+      "viewType": "lineChart",
+      "metricOf": "sessionCount",
+      "metricFormat": "sessionCount",
+      "series": [
+        { "name": "checkout_carrier_select", "events": ["checkout_carrier_select"] },
+        { "name": "checkout_payment_select", "events": ["checkout_payment_select"] },
+        { "name": "checkout_submit", "events": ["checkout_submit"] }
+      ]
+    },
+    {
+      "name": "Wyszukiwarka i filtry",
+      "metricType": "timeseries",
+      "viewType": "lineChart",
+      "metricOf": "sessionCount",
+      "metricFormat": "sessionCount",
+      "series": [
+        { "name": "search_open", "events": ["search_open"] },
+        { "name": "search_submit", "events": ["search_submit"] },
+        { "name": "filters_apply", "events": ["filters_apply"] },
+        { "name": "quickview_open", "events": ["quickview_open"] }
+      ]
+    },
+    {
+      "name": "Użytkownicy z zablokowanym checkoutem",
+      "metricType": "table",
+      "viewType": "table",
+      "metricOf": "userId",
+      "metricFormat": "sessionCount",
+      "series": [{ "name": "Sesje", "events": ["checkout_submit_blocked"] }]
+    },
+    {
+      "name": "Błędy JS w sesjach z checkoutem",
+      "metricType": "table",
+      "viewType": "table",
+      "metricOf": "jsException",
+      "metricFormat": "sessionCount",
+      "series": [{ "name": "Sesje", "events": ["checkout_view"] }]
+    }
+  ]
+}

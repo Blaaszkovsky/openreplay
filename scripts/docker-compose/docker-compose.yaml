@@ -614,6 +614,7 @@ services:
       - openreplay-net
     volumes:
       - ./nginx.conf:/etc/nginx/conf.d/default.conf
+      - ./wb-ops:/usr/share/nginx/wb:ro
     restart: unless-stopped
 
 
