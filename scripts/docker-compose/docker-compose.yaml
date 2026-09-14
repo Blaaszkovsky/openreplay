@@ -615,6 +615,11 @@ services:
     volumes:
       - ./nginx.conf:/etc/nginx/conf.d/default.conf
       - ./wb-ops:/usr/share/nginx/wb:ro
+    environment:
+      # Dokploy re-clones the repo on every deploy, so bind mounts point at a stale
+      # directory until the container is recreated. Bump this whenever nginx.conf
+      # or wb-ops/ change: compose sees a changed service and recreates nginx.
+      WB_OPS_VERSION: "2"
     restart: unless-stopped
 
 
