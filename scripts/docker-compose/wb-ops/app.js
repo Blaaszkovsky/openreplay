@@ -28,9 +28,12 @@
     const r = await fetch(path, Object.assign({ credentials: 'same-origin' }, opts, {
       headers: Object.assign({ Authorization: 'Bearer ' + state.jwt, 'Content-Type': 'application/json' }, opts.headers || {}),
     }));
-    if (r.status === 401 && retry) {
+    // 401/403 "Invalid token": OpenReplay keeps one token generation per user — any login or
+    // refresh elsewhere invalidates this one. The SPA tab re-persists a fresh token on its next
+    // load, so re-read it; if nothing changed, the user has to reopen OpenReplay.
+    if ((r.status === 401 || r.status === 403) && retry) {
       const before = state.jwt; await refreshJwt();
-      if (state.jwt === before) throw new Error('OpenReplay odrzucił token (401) — odśwież kartę OpenReplay i spróbuj ponownie.');
+      if (state.jwt === before) throw new Error('OpenReplay odrzucił token (' + r.status + ') — otwórz OpenReplay w nowej karcie (zaloguj się, jeśli poprosi), wróć tutaj i odśwież.');
       return api(path, opts, false);
     }
     const text = await r.text();
