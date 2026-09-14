@@ -1,0 +1,6 @@
+# nginx for replay.wbrix.dev with the config and the wb-ops page baked in.
+# Built by `docker compose up --build` on every Dokploy deploy: no bind mounts,
+# so a re-cloned repository can never leave the running container with a stale tree.
+FROM nginx:latest
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+COPY wb-ops /usr/share/nginx/wb

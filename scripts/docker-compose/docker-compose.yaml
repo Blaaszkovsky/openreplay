@@ -607,19 +607,17 @@ services:
   
 
   nginx-openreplay:
-    image: nginx:latest
+    # nginx.conf and wb-ops/ are baked into the image (Dockerfile.nginx) instead of
+    # bind-mounted: Dokploy re-clones the repository on every deploy and a bind mount
+    # would keep pointing at the deleted checkout until the container is recreated.
+    build:
+      context: .
+      dockerfile: Dockerfile.nginx
+    image: openreplay-nginx-wb:latest
     expose:
       - "80"
     networks:
       - openreplay-net
-    volumes:
-      - ./nginx.conf:/etc/nginx/conf.d/default.conf
-      - ./wb-ops:/usr/share/nginx/wb:ro
-    environment:
-      # Dokploy re-clones the repo on every deploy, so bind mounts point at a stale
-      # directory until the container is recreated. Bump this whenever nginx.conf
-      # or wb-ops/ change: compose sees a changed service and recreates nginx.
-      WB_OPS_VERSION: "6"
     restart: unless-stopped
 
 
