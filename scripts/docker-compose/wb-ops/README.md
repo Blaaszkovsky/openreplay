@@ -31,6 +31,15 @@ directory until the nginx container is recreated. **Bump `WB_OPS_VERSION` on `ng
 `docker-compose.yaml`** (and `app.js?v=` in `index.html` for browser caches) in the same commit as any change
 here. Push to `develop` → Dokploy deploys (~30 s).
 
+## Templates
+
+- `prestashop.json` — shops running the `wb_openreplay` PrestaShop module.
+- `wordpress.json` — websites running the `wb_wpopenreplay` plugin (forms, conversion clicks, search, scroll, JS errors).
+- `woocommerce.json` — `extends: wordpress` + the WooCommerce purchase path; use it for a site that is also a shop.
+
+A template may `extends` another: metadata is unioned, cards appended by name, the dashboard block is the child's.
+An event step in `series[].events` is a name or `{ "name": "scroll_depth", "props": { "depth": 100 } }` (property filter).
+
 ## Editing the template
 
 `templates/prestashop.json`: `metadata` (max 10 per project), `dashboard {name, description}`, `cards[]` with
