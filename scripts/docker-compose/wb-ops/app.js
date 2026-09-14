@@ -6,12 +6,26 @@
   const state = { jwt: null, user: null, projects: [], project: null, templates: {}, plan: null };
 
   /* ---------------- API ---------------- */
+  // The OpenReplay SPA persists its JWT in localStorage (mobx-persist "UserStore") and the
+  // refresh cookie is httpOnly on /api/refresh. /api/refresh wants both: the (possibly expired)
+  // bearer and the cookie. We reuse the SPA's token, never store anything ourselves.
+  function storedJwt() {
+    try { const s = JSON.parse(localStorage.getItem('UserStore') || '{}'); return s.jwt || null; } catch (e) { return null; }
+  }
+  function jwtExpired(jwt) {
+    try { const p = JSON.parse(atob(jwt.split('.')[1].replace(/-/g, '+').replace(/_/g, '/'))); return !p.exp || p.exp * 1000 < Date.now() + 30000; } catch (e) { return true; }
+  }
   async function refreshJwt() {
-    const r = await fetch('/api/refresh', { credentials: 'same-origin' });
-    if (!r.ok) throw new Error('not logged in (' + r.status + ')');
-    const j = await r.json();
-    state.jwt = j.jwt || (j.data && j.data.jwt);
-    if (!state.jwt) throw new Error('no jwt in refresh response');
+    const old = state.jwt || storedJwt();
+    if (!old) throw new Error('Brak sesji OpenReplay w tej przeglądarce — zaloguj się i wróć.');
+    const r = await fetch('/api/refresh', { credentials: 'same-origin', headers: { Authorization: 'Bearer ' + old } });
+    if (r.ok) {
+      const j = await r.json();
+      state.jwt = j.jwt || (j.data && j.data.jwt) || old;
+      return;
+    }
+    if (!jwtExpired(old)) { state.jwt = old; return; }
+    throw new Error('Sesja OpenReplay wygasła (' + r.status + ') — otwórz OpenReplay, zaloguj się ponownie i wróć.');
   }
   async function api(path, opts = {}, retry = true) {
     const r = await fetch(path, Object.assign({ credentials: 'same-origin' }, opts, {
