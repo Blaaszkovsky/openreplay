@@ -173,14 +173,15 @@
       if (!dashboardId) {
         const d = await post(v2('/' + p.pid + '/dashboards'), { name: p.tpl.dashboard.name, description: p.tpl.dashboard.description, isPublic: true, isPinned: true, metrics: cardIds });
         dashboardId = d && (d.dashboard_id || d.dashboardId || (d.dashboard && d.dashboard.dashboardId));
-        log(out, 'dashboard + ' + p.tpl.dashboard.name + ' (#' + dashboardId + ') z ' + cardIds.length + ' kartami', 'ok');
-      } else {
-        const onBoard = new Set(((p.dashboard.widgets || p.dashboard.metrics) || []).map((w) => w.metricId));
-        for (const id of cardIds) {
-          if (onBoard.has(id)) continue;
-          await post(v2('/' + p.pid + '/dashboards/' + dashboardId + '/cards'), { metric_ids: [id], config: {} });
-          log(out, 'dashboard ← karta #' + id, 'ok');
-        }
+        log(out, 'dashboard + ' + p.tpl.dashboard.name + ' (#' + dashboardId + ')', 'ok');
+      }
+      // `metrics` on create is not guaranteed to attach anything; add the missing cards explicitly
+      const fresh = await api(v2('/' + p.pid + '/dashboards/' + dashboardId));
+      const onBoard = new Set(((fresh && (fresh.widgets || fresh.metrics)) || []).map((w) => w.metricId));
+      const missing = cardIds.filter((id) => !onBoard.has(id));
+      if (missing.length) {
+        await post(v2('/' + p.pid + '/dashboards/' + dashboardId + '/cards'), { metric_ids: missing, config: {} });
+        log(out, 'dashboard ← ' + missing.length + ' kart (#' + missing.join(', #') + ')', 'ok');
       }
       if (dashboardId) setDashLink(dashboardId);
       log(out, 'Gotowe.', 'ok');
