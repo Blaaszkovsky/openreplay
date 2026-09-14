@@ -15,23 +15,24 @@
   function jwtExpired(jwt) {
     try { const p = JSON.parse(atob(jwt.split('.')[1].replace(/-/g, '+').replace(/_/g, '/'))); return !p.exp || p.exp * 1000 < Date.now() + 30000; } catch (e) { return true; }
   }
+  // We never call /api/refresh ourselves: a refresh rotates the user's token generation and
+  // logs the SPA out in the other tab. The SPA's token lives ~24 h and the SPA re-persists a
+  // fresh one whenever it refreshes, so re-reading localStorage is all the "refresh" we need.
   async function refreshJwt() {
-    const old = state.jwt || storedJwt();
-    if (!old) throw new Error('Brak sesji OpenReplay w tej przeglądarce — zaloguj się i wróć.');
-    const r = await fetch('/api/refresh', { credentials: 'same-origin', headers: { Authorization: 'Bearer ' + old } });
-    if (r.ok) {
-      const j = await r.json();
-      state.jwt = j.jwt || (j.data && j.data.jwt) || old;
-      return;
-    }
-    if (!jwtExpired(old)) { state.jwt = old; return; }
-    throw new Error('Sesja OpenReplay wygasła (' + r.status + ') — otwórz OpenReplay, zaloguj się ponownie i wróć.');
+    const jwt = storedJwt();
+    if (!jwt) throw new Error('Brak sesji OpenReplay w tej przeglądarce — zaloguj się w OpenReplay i wróć na tę stronę.');
+    if (jwtExpired(jwt)) throw new Error('Sesja OpenReplay wygasła — otwórz OpenReplay w nowej karcie (odświeży token) i wróć.');
+    state.jwt = jwt;
   }
   async function api(path, opts = {}, retry = true) {
     const r = await fetch(path, Object.assign({ credentials: 'same-origin' }, opts, {
       headers: Object.assign({ Authorization: 'Bearer ' + state.jwt, 'Content-Type': 'application/json' }, opts.headers || {}),
     }));
-    if (r.status === 401 && retry) { await refreshJwt(); return api(path, opts, false); }
+    if (r.status === 401 && retry) {
+      const before = state.jwt; await refreshJwt();
+      if (state.jwt === before) throw new Error('OpenReplay odrzucił token (401) — odśwież kartę OpenReplay i spróbuj ponownie.');
+      return api(path, opts, false);
+    }
     const text = await r.text();
     let body; try { body = JSON.parse(text); } catch (e) { body = text; }
     if (!r.ok) throw new Error(path + ' → ' + r.status + ' ' + (typeof body === 'object' ? JSON.stringify(body).slice(0, 300) : String(body).slice(0, 300)));
