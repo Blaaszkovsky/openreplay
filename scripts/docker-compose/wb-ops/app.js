@@ -141,15 +141,26 @@
       const existingCardNames = new Set(cur.cards.map((c) => c.name));
       const cardsTodo = tpl.cards.filter((c) => !existingCardNames.has(c.name));
       const cardsHave = tpl.cards.filter((c) => existingCardNames.has(c.name)).map((c) => cur.cards.find((x) => x.name === c.name));
+      // the list endpoint does not carry widgets; ask for the dashboard itself
+      let onBoard = new Set();
+      if (dashboard) {
+        const full = await api(v2('/' + pid + '/dashboards/' + dashboard.dashboardId));
+        onBoard = new Set(((full && (full.widgets || full.metrics)) || []).map((w) => w.metricId));
+      }
+      const detached = cardsHave.filter((c) => c && !onBoard.has(c.metricId));
       state.plan = { tpl, pid, metaTodo, dashboard, cardsTodo, cardsHave, cur };
       const rows = [];
       tpl.metadata.forEach((k) => rows.push(['metadata', esc(k), cur.metadata.includes(k) ? '<span class="tag ok">jest</span>' : '<span class="tag todo">dodam</span>']));
-      rows.push(['dashboard', esc(tpl.dashboard.name), dashboard ? '<span class="tag ok">jest (#' + esc(dashboard.dashboardId) + ')</span>' : '<span class="tag todo">dodam</span>']);
-      tpl.cards.forEach((c) => rows.push(['karta', esc(c.name) + ' <span class="muted">' + esc(c.metricType + '/' + c.metricOf) + '</span>', existingCardNames.has(c.name) ? '<span class="tag ok">jest</span>' : '<span class="tag todo">dodam</span>']));
+      rows.push(['dashboard', esc(tpl.dashboard.name), dashboard ? '<span class="tag ok">jest (#' + esc(dashboard.dashboardId) + ', kart: ' + onBoard.size + ')</span>' : '<span class="tag todo">dodam</span>']);
+      tpl.cards.forEach((c) => {
+        const have = cardsHave.find((x) => x && x.name === c.name);
+        const status = !have ? '<span class="tag todo">dodam</span>' : (dashboard && !onBoard.has(have.metricId) ? '<span class="tag todo">jest, dopnę do dashboardu</span>' : '<span class="tag ok">jest</span>');
+        rows.push(['karta', esc(c.name) + ' <span class="muted">' + esc(c.metricType + '/' + c.metricOf) + '</span>', status]);
+      });
       let warn = '';
       if (metaTodo.length > freeSlots) warn = '<p class="tag err">Brakuje slotów metadata: potrzeba ' + metaTodo.length + ', wolnych ' + freeSlots + ' (limit 10). Dodam tylko pierwsze ' + Math.max(0, freeSlots) + '.</p>';
       $('plan-out').innerHTML = warn + '<table><tr><th>typ</th><th>nazwa</th><th>stan</th></tr>' + rows.map((r) => '<tr><td>' + r[0] + '</td><td>' + r[1] + '</td><td>' + r[2] + '</td></tr>').join('') + '</table>';
-      $('apply').disabled = !(metaTodo.length || !dashboard || cardsTodo.length);
+      $('apply').disabled = !(metaTodo.length || !dashboard || cardsTodo.length || detached.length);
       if ($('apply').disabled) $('plan-out').innerHTML += '<p class="muted">Nic do zrobienia — projekt ma już wszystko z szablonu.</p>';
       if (dashboard) setDashLink(dashboard.dashboardId);
     } catch (e) { $('plan-out').innerHTML = '<p class="tag err">' + esc(e.message) + '</p>'; }
