@@ -101,7 +101,9 @@
   }
   async function createProject() {
     const name = $('new-name').value.trim();
-    if (name.length < 2) return alert('Podaj nazwę projektu');
+    const info = $('project-info');
+    // OpenReplay's own name pattern: letters, digits, space and - _ . # / | & '
+    if (name.length < 2 || !/^[a-zA-Z0-9\-éèàç |&\/\\_.#']*$/.test(name)) { info.innerHTML = '<span class="tag err">Nazwa: litery, cyfry, spacja i - _ . # / | & (bez nawiasów i polskich znaków)</span>'; return; }
     $('create').disabled = true;
     try {
       const created = await post(v1('/projects'), { name, platform: 'web' });
@@ -109,7 +111,7 @@
       const id = created && (created.projectId || (created.data && created.data.projectId));
       if (id) { $('project').value = id; selectProject(); }
       $('new-name').value = '';
-    } catch (e) { alert(e.message); } finally { $('create').disabled = false; }
+    } catch (e) { info.innerHTML = '<span class="tag err">' + esc(e.message) + '</span>'; } finally { $('create').disabled = false; }
   }
 
   /* ---------------- template: plan + apply ---------------- */
