@@ -1,0 +1,10 @@
+<!-- wb-ops: sampling profilers only feed trace_log, which is disabled in config.d. -->
+<clickhouse>
+    <profiles>
+        <default>
+            <query_profiler_real_time_period_ns>0</query_profiler_real_time_period_ns>
+            <query_profiler_cpu_time_period_ns>0</query_profiler_cpu_time_period_ns>
+            <log_processors_profiles>0</log_processors_profiles>
+        </default>
+    </profiles>
+</clickhouse>
