@@ -206,6 +206,15 @@ services:
       - shared-volume:/mnt/efs
     env_file:
       - docker-envs/alerts.env
+    environment:
+      # SMTP via the Mailu server on this host; values come from Dokploy env (encrypted).
+      EMAIL_HOST: ${OR_EMAIL_HOST:-}
+      EMAIL_PORT: ${OR_EMAIL_PORT:-465}
+      EMAIL_USER: ${OR_EMAIL_USER:-}
+      EMAIL_PASSWORD: ${OR_EMAIL_PASSWORD:-}
+      EMAIL_USE_TLS: ${OR_EMAIL_USE_TLS:-false}
+      EMAIL_USE_SSL: ${OR_EMAIL_USE_SSL:-true}
+      EMAIL_FROM: ${OR_EMAIL_FROM:-}
     depends_on:
       postgresql:
         condition: service_healthy
@@ -506,6 +515,15 @@ services:
       - shared-volume:/mnt/efs
     env_file:
       - docker-envs/chalice.env
+    environment:
+      # SMTP via the Mailu server on this host; values come from Dokploy env (encrypted).
+      EMAIL_HOST: ${OR_EMAIL_HOST:-}
+      EMAIL_PORT: ${OR_EMAIL_PORT:-465}
+      EMAIL_USER: ${OR_EMAIL_USER:-}
+      EMAIL_PASSWORD: ${OR_EMAIL_PASSWORD:-}
+      EMAIL_USE_TLS: ${OR_EMAIL_USE_TLS:-false}
+      EMAIL_USE_SSL: ${OR_EMAIL_USE_SSL:-true}
+      EMAIL_FROM: ${OR_EMAIL_FROM:-}
     depends_on:
       postgresql:
         condition: service_healthy
