@@ -224,7 +224,6 @@ services:
         condition: service_healthy
       minio:
         condition: service_healthy
-    environment: {}  # Fallback empty environment if env_file is missing
     restart: unless-stopped
   
   
@@ -533,7 +532,6 @@ services:
         condition: service_healthy
       minio:
         condition: service_healthy
-    environment: {}  # Fallback empty environment if env_file is missing
     restart: unless-stopped
   
   
